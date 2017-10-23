@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/shaders">
+        <file>vshader1.glsl</file>
+        <file>fshader1.glsl</file>
+        <file>shipVertexShader.glsl</file>
+        <file>bossVShader.glsl</file>
+        <file>bulletVShader.glsl</file>
+    </qresource>
+    <qresource prefix="/models">
+        <file>spaceship.off</file>
+        <file>enemyShip.off</file>
+    </qresource>
+</RCC>
