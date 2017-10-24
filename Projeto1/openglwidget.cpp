@@ -106,7 +106,7 @@ void OpenGLWidget::keyReleaseEvent(QKeyEvent *event)
 void OpenGLWidget::updateObjects()
 {
     //Check if the player has lost
-    if(ship->lifes == 0)
+    if(ship->lifes == -1)
         endGame(false);
     //Check if the player has won
     else if(boss->lifes == 0)
