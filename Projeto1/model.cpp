@@ -190,8 +190,8 @@ void Model::readOFFFile(QString fileName)
         this->midPoint = QVector3D((min + max) * 0.5);
         this->invDiag = 2.0 / (max - min).length();
 
-        this->hitbox = QRectF(min.x()*invDiag*scale, max.y()*invDiag*scale,
-                              -2*min.x()*invDiag*scale, 2*max.y()*invDiag*scale);
+        //Create an default hitbox using the maximun and minimun coordinates of the model
+        this->hitbox = QRectF(min.x()*invDiag*scale, max.y()*invDiag*scale, -2*min.x()*invDiag*scale, 2*max.y()*invDiag*scale);
 
         for (unsigned  int i = 0; i < numFaces; ++i)
         {

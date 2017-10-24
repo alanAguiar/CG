@@ -2,17 +2,21 @@
 
 Bullet::Bullet(QOpenGLWidget *_glWidget, QVector2D position, QVector2D speed, float size) : Model(_glWidget)
 {
+    //Set the attibutes with default values
     this->position = position;
     this->speed = speed;    
     this->force = QVector2D(0, 0);
     this->scale = size;
     this->rotation = 0;
     this->color = QVector4D(1, 1, 1, 1);
+
+    //Load the model
     this->loadGeometry();
     this->createVBOs();
     this->createShaders(":/shaders/bulletVShader.glsl", ":/shaders/fshader1.glsl");
 }
 
+//Overloaded constructor, with the addition of an 'force' parameter
 Bullet::Bullet(QOpenGLWidget *_glWidget, QVector2D position, QVector2D speed, float size, QVector2D force) :  Bullet(_glWidget, position, speed, size)
 {
     this->force = force;
@@ -21,13 +25,17 @@ Bullet::Bullet(QOpenGLWidget *_glWidget, QVector2D position, QVector2D speed, fl
 
 void Bullet::updatePosition()
 {
+    //Update the model position, according to the speed
     position.setX(position.x() + speed.x());
     position.setY(position.y() + speed.y());
+    //Accelerate the object
     speed += force;
+    //Update the hitbox position accordingly
     this->hitbox.moveCenter(QPointF(position.x(), position.y()));
 
 }
 
+//Create a square geometry
 void Bullet::loadGeometry()
 {
     this->numVertices = 4;
@@ -54,11 +62,13 @@ void Bullet::loadGeometry()
     this->hitbox = QRectF(-this->scale/2, this->scale/2, this->scale, this->scale);
 }
 
+//Set object's color
 void Bullet::setColor(QVector4D c)
 {
     this->color = c;
 }
 
+//Overwrite the drawModel method, in order to add 'color' as a IN attribute on shader
 void Bullet::drawModel()
 {
     modelMatrix.setToIdentity();

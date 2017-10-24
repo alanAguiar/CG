@@ -1,5 +1,5 @@
-#version 410
-
+//#version 410
+#version 330
 in vec4 v2fcolor;
 
 out vec4 myfragcolor;
