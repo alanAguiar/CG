@@ -1,0 +1,25 @@
+<RCC>
+    <qresource prefix="/shaders">
+        <file>vshader1.glsl</file>
+        <file>fshader1.glsl</file>
+        <file>shipVertexShader.glsl</file>
+        <file>bossVShader.glsl</file>
+        <file>bulletVShader.glsl</file>
+        <file>bulletfshader.glsl</file>
+        <file>shipfshader.glsl</file>
+    </qresource>
+    <qresource prefix="/models">
+        <file>spaceship.off</file>
+        <file>enemyShip.off</file>
+        <file>bullet.off</file>
+        <file>plane.obj</file>
+        <file>spaceship.obj</file>
+    </qresource>
+    <qresource prefix="/textures">
+        <file>bullet.png</file>
+        <file>shiptexture.png</file>
+        <file>background.png</file>
+        <file>playerBullet.png</file>
+        <file>fire.png</file>
+    </qresource>
+</RCC>
