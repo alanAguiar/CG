@@ -3,18 +3,22 @@
 OpenGLWidget::OpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
     timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(updateObjects()));
     this->maxScore = 0;
-    QPushButton* s = new QPushButton(this);
-    s->setGeometry(QRect(QPoint(100, 100), QSize(200, 50)));
-    s->setText("f");
-    s->resize(100, 100);
 
+    initializeUI();
+    showMenu();
+
+    timer->start(15);
+    connect(timer, SIGNAL(timeout()), this, SLOT(updateObjects()));
 }
 
 void OpenGLWidget::startGame()
 {
-    timer->start(15);
+    camera.up = QVector3D(0, 1, 0);
+    camera.center = QVector3D(0, 0, 0);
+    camera.eye = QVector3D(0, 0, 2);
+    camera.computeViewMatrix();
+
     this->score = 0;
     inGame = true;
 
@@ -33,6 +37,12 @@ void OpenGLWidget::initializeGL()
     glEnable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
+
+    ship = std::make_unique<Ship>(this);
+    ship->position = QVector3D(0, 0, 0);
+    bg1 = std::make_unique<Background>(this, QVector3D(0.6, -1.6, 0));
+    bg1->scale = 3.3;
+    bg1->rotation = QVector3D(105, 45, -5);
 }
 
 void OpenGLWidget::resizeGL(int width, int height)
@@ -71,6 +81,25 @@ void OpenGLWidget::paintGL()
         for(std::list<Bullet *>::iterator it = boss->bulletsShot.begin(); it!=boss->bulletsShot.end(); it++){
             (*it)->draw();
         }
+    }
+    else
+    {
+        camera.up = QVector3D(0, 0, 1);
+        camera.center = QVector3D(0.05, 0, 0);
+        camera.eye = QVector3D(-0.1, 0.2, 0.1);
+        camera.computeViewMatrix();
+
+        paintModel(ship->model);
+        ship->draw();
+
+        for(std::list<Bullet *>::iterator it = ship->fireParticles.begin(); it!=ship->fireParticles.end(); it++){
+            (*it)->rotation = QVector3D(0, -45, 0);
+            (*it)->position.setZ(0.01);
+            paintModel((*it)->model);
+            (*it)->draw();
+        }
+        paintModel(bg1->model);
+        bg1->draw();
     }
 }
 
@@ -133,45 +162,79 @@ void OpenGLWidget::keyReleaseEvent(QKeyEvent *event)
 
 void OpenGLWidget::updateObjects()
 {
-   // qDebug("Ship:%d Fire:%d Boss:%d \n", ship->bulletsShot.size(), ship->fireParticles.size(), boss->bulletsShot.size());
-
-    if(ship->lifes == 0)
-        endGame(false);
-
-    else if(boss->lifes == 0)
-        endGame(true);
-    else
+    if(inGame)
     {
-        ship->update();
-        boss->shoot();
-        bg1->update();
-        bg2->update();
+        if(ship->lifes == 0)
+            endGame(false);
 
-        if(invincible && delay.elapsed() > 1500)
-            invincible = false;
+        else if(boss->lifes == 0)
+            endGame(true);
+        else
+        {
+            ship->update();
+            boss->shoot();
+            bg1->update();
+            bg2->update();
 
-        if(shooting)
-            ship->shoot();
+            if(invincible && delay.elapsed() > 1500)
+                invincible = false;
 
-        for(std::list<Bullet *>::iterator it = ship->bulletsShot.begin(); it!=ship->bulletsShot.end();){
-            if((*it)->position.y() > 1 || (*it)->position.y() < -1){
-                delete(*it);
-                it = ship->bulletsShot.erase(it);
-            }
-            else{
-                (*it)->update();
-                if((*it)->hitbox.intersects(boss->hitbox)){
-                    boss->shotTaken();
-                    this->score += 100 * 5/boss->lifes;
-                    emit showScore(QString("Pontuação: \%1").arg(this->score));
+            if(shooting)
+                ship->shoot();
+
+            for(std::list<Bullet *>::iterator it = ship->bulletsShot.begin(); it!=ship->bulletsShot.end();){
+                if((*it)->position.y() > 1 || (*it)->position.y() < -1){
                     delete(*it);
                     it = ship->bulletsShot.erase(it);
+                }
+                else{
+                    (*it)->update();
+                    if((*it)->hitbox.intersects(boss->hitbox)){
+                        boss->shotTaken();
+                        this->score += 100 * 5/boss->lifes;
+                        emit showScore(QString("Pontuação: \%1").arg(this->score));
+                        delete(*it);
+                        it = ship->bulletsShot.erase(it);
+                    }
+                    else
+                        it++;
+                }
+            }
+
+            for(std::list<Bullet *>::iterator it = ship->fireParticles.begin(); it!=ship->fireParticles.end();){
+                (*it)->update();
+                if((*it)->timeToLive <= 0 || (*it)->scale <= 0){
+                    delete(*it);
+                    it = ship->fireParticles.erase(it);
                 }
                 else
                     it++;
             }
-        }
 
+            for(std::list<Bullet *>::iterator it = boss->bulletsShot.begin(); it!=boss->bulletsShot.end();){
+                if((*it)->position.y() > 1.2 || (*it)->position.y() < -1.2 || (*it)->position.x() > 1.2 || (*it)->position.x() < -1.2){
+                    delete(*it);
+                    it = boss->bulletsShot.erase(it);
+                }
+                else{
+                    (*it)->update();
+                    if((*it)->hitbox.intersects(ship->hitbox) && !invincible){
+                        ship->shotTaken();
+                        emit showLifes(QString("Vidas: \%1").arg(ship->lifes));
+                        delete(*it);
+                        it = boss->bulletsShot.erase(it);
+                        invincible = true;
+                        delay.start();
+                    }
+                    else
+                        it++;
+                }
+            }
+        }
+    }
+    else
+    {
+        ship->update();
         for(std::list<Bullet *>::iterator it = ship->fireParticles.begin(); it!=ship->fireParticles.end();){
             (*it)->update();
             if((*it)->timeToLive <= 0 || (*it)->scale <= 0){
@@ -181,36 +244,14 @@ void OpenGLWidget::updateObjects()
             else
                 it++;
         }
-
-        for(std::list<Bullet *>::iterator it = boss->bulletsShot.begin(); it!=boss->bulletsShot.end();){
-            if((*it)->position.y() > 1.2 || (*it)->position.y() < -1.2 || (*it)->position.x() > 1.2 || (*it)->position.x() < -1.2){
-                delete(*it);
-                it = boss->bulletsShot.erase(it);
-            }
-            else{
-                (*it)->update();
-                if((*it)->hitbox.intersects(ship->hitbox) && !invincible){
-                    qDebug("PLAYER: %f %f\n", (*it)->position.y(), (float)ship->hitbox.center().y());
-                    ship->shotTaken();
-                    emit showLifes(QString("Vidas: \%1").arg(ship->lifes));
-                    delete(*it);
-                    it = boss->bulletsShot.erase(it);
-                    invincible = true;
-                    delay.start();
-                }
-                else
-                    it++;
-            }
-        }
     }
-
     update();
 }
 
 void OpenGLWidget::endGame(bool won)
 {
     this->inGame = false;
-    timer->stop();
+    //timer->stop();
     if(this->score > this->maxScore)
         this->maxScore = this->score;
     if(won)
@@ -220,4 +261,70 @@ void OpenGLWidget::endGame(bool won)
     emit enableText();
     emit enableStartButton();
     emit enableQuitButton();
+}
+
+void OpenGLWidget::closeWindow(){
+    qApp->quit();
+}
+
+void OpenGLWidget::showInstructions()
+{
+    startButton->hide();
+    quitButton->hide();
+    instructionsButton->hide();
+
+    instructionsText->show();
+    backButton->show();
+}
+
+void OpenGLWidget::showMenu()
+{
+    instructionsText->hide();
+    backButton->hide();
+
+    startButton->show();
+    quitButton->show();
+    instructionsButton->show();
+}
+
+void OpenGLWidget::initializeUI()
+{
+    startButton = new QPushButton("Start", this);
+    instructionsButton = new QPushButton("Instructions", this);
+    quitButton = new QPushButton("Quit", this);
+    backButton = new QPushButton("Back", this);
+    instructionsText = new QLabel(this);
+    lifeText = new QLabel(this);
+    scoreText = new QLabel(this);
+
+    startButton->setGeometry(20, 200, 200, 100);
+    startButton->setStyleSheet("QPushButton{border:0px; background: transparent; text-align:left; font:italic 40pt; font-weight: bold; color: #ffffff}QPushButton:hover{border:0px; background: transparent; text-align:left; font:italic 48pt; font-weight: bold; color: #ffffff}");
+    connect(startButton, SIGNAL(clicked(bool)), this, SLOT(startGame()));
+    connect(startButton, SIGNAL(clicked(bool)), instructionsButton, SLOT(hide()));
+    connect(startButton, SIGNAL(clicked(bool)), startButton, SLOT(hide()));
+    connect(startButton, SIGNAL(clicked(bool)), quitButton, SLOT(hide()));
+
+    instructionsButton->setGeometry(20, 300, 400, 100);
+    instructionsButton->setStyleSheet("QPushButton{border:0px; background: transparent; text-align:left; font:italic 32pt; font-weight: bold; color: #ffffff}QPushButton:hover{border:0px; background: transparent; text-align:left; font:italic 38pt; font-weight: bold; color: #ffffff}");
+    connect(instructionsButton, SIGNAL(clicked(bool)), this, SLOT(showInstructions()));
+
+    quitButton->setGeometry(20, 400, 400, 100);
+    quitButton->setStyleSheet("QPushButton{border:0px; background: transparent; text-align:left; font:italic 32pt; font-weight: bold; color: #ffffff}QPushButton:hover{border:0px; background: transparent; text-align:left; font:italic 38pt; font-weight: bold; color: #ffffff}");
+    connect(quitButton, SIGNAL(clicked(bool)), this, SLOT(closeWindow()));
+
+    backButton->setGeometry(20, 400, 200, 100);
+    backButton->setStyleSheet("QPushButton{border:0px; background: transparent; text-align:left; font:italic 28pt; font-weight: bold; color: #ffffff}QPushButton:hover{border:0px; background: transparent; text-align:left; font:italic 32pt; font-weight: bold; color: #ffffff}");
+    connect(backButton, SIGNAL(clicked(bool)), this, SLOT(showMenu()));
+
+    instructionsText->setText("Use the ARROWS to move\nUse the SPACEBAR to shoot");
+    instructionsText->setGeometry(20, 200, 800, 200);
+    instructionsText->setStyleSheet("QLabel{border:0px; background: transparent; text-align:left; font:italic 32pt; font-weight: bold; color: #ffffff}");
+
+    lifeText->setGeometry(20, 10, 200, 100);
+    lifeText->setStyleSheet("QLabel{border: 0px; background: transparent; text-align: left; font: 18pt; font-weight: bold; color: #ffffff}");
+    connect(this, SIGNAL(showLifes(QString)), lifeText, SLOT(setText(QString)));
+
+    scoreText->setGeometry(20, 5, 200, 30);
+    scoreText->setStyleSheet("QLabel{border: 0px; background: transparent; text-align: right; font: 18pt; font-weight: bold; color: #ffffff}");
+    connect(this, SIGNAL(showScore(QString)), scoreText, SLOT(setText(QString)));
 }

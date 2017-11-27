@@ -10,114 +10,43 @@
     <height>720</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>480</width>
+    <height>480</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>1280</width>
+    <height>720</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="OpenGLWidget" name="openGLWidget">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>561</width>
-      <height>651</height>
-     </rect>
-    </property>
-    <property name="focusPolicy">
-     <enum>Qt::StrongFocus</enum>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="startButton">
-    <property name="geometry">
-     <rect>
-      <x>340</x>
-      <y>530</y>
-      <width>80</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Jogar</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="scoreLabel">
-    <property name="geometry">
-     <rect>
-      <x>80</x>
-      <y>480</y>
-      <width>88</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Pontuação: 0</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="lifeLabel">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>540</y>
-      <width>41</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Vidas:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="textLabel">
-    <property name="geometry">
-     <rect>
-      <x>410</x>
-      <y>540</y>
-      <width>162</width>
-      <height>102</height>
-     </rect>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-    <property name="text">
-     <string>Instruções: 
-
- Use as SETAS 
- para se mover 
-
- Use ESPAÇO para atirar</string>
-    </property>
-    <property name="scaledContents">
-     <bool>false</bool>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-    <property name="wordWrap">
-     <bool>true</bool>
-    </property>
-    <property name="indent">
-     <number>-1</number>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="quitButton">
-    <property name="geometry">
-     <rect>
-      <x>170</x>
-      <y>510</y>
-      <width>80</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Sair</string>
-    </property>
-   </widget>
-   <zorder>openGLWidget</zorder>
-   <zorder>quitButton</zorder>
-   <zorder>startButton</zorder>
-   <zorder>textLabel</zorder>
-   <zorder>scoreLabel</zorder>
-   <zorder>lifeLabel</zorder>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="baseSize">
+    <size>
+     <width>640</width>
+     <height>720</height>
+    </size>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="OpenGLWidget" name="openGLWidget">
+      <property name="focusPolicy">
+       <enum>Qt::StrongFocus</enum>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -157,182 +86,5 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections>
-  <connection>
-   <sender>openGLWidget</sender>
-   <signal>showLifes(QString)</signal>
-   <receiver>lifeLabel</receiver>
-   <slot>setText(QString)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>322</x>
-     <y>383</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>43</x>
-     <y>57</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>openGLWidget</sender>
-   <signal>showScore(QString)</signal>
-   <receiver>scoreLabel</receiver>
-   <slot>setText(QString)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>322</x>
-     <y>383</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>483</x>
-     <y>57</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>quitButton</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>254</x>
-     <y>411</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>322</x>
-     <y>359</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>openGLWidget</sender>
-   <signal>enableText()</signal>
-   <receiver>textLabel</receiver>
-   <slot>show()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>313</x>
-     <y>384</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>310</x>
-     <y>309</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>openGLWidget</sender>
-   <signal>enableQuitButton()</signal>
-   <receiver>quitButton</receiver>
-   <slot>show()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>313</x>
-     <y>384</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>254</x>
-     <y>411</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>openGLWidget</sender>
-   <signal>setText(QString)</signal>
-   <receiver>textLabel</receiver>
-   <slot>setText(QString)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>313</x>
-     <y>384</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>310</x>
-     <y>309</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>startButton</sender>
-   <signal>clicked()</signal>
-   <receiver>textLabel</receiver>
-   <slot>hide()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>364</x>
-     <y>411</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>310</x>
-     <y>309</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>startButton</sender>
-   <signal>clicked()</signal>
-   <receiver>openGLWidget</receiver>
-   <slot>startGame()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>364</x>
-     <y>411</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>313</x>
-     <y>384</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>startButton</sender>
-   <signal>clicked()</signal>
-   <receiver>startButton</receiver>
-   <slot>hide()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>364</x>
-     <y>411</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>364</x>
-     <y>411</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>startButton</sender>
-   <signal>clicked()</signal>
-   <receiver>quitButton</receiver>
-   <slot>hide()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>364</x>
-     <y>411</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>254</x>
-     <y>411</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>openGLWidget</sender>
-   <signal>enableStartButton()</signal>
-   <receiver>startButton</receiver>
-   <slot>show()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>313</x>
-     <y>384</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>364</x>
-     <y>411</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

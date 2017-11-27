@@ -34,7 +34,11 @@ public:
 
     QPushButton* startButton;
     QPushButton* quitButton;
-    QPushButton* instructionsButton;
+    QPushButton* instructionsButton;    
+    QPushButton* backButton;
+    QLabel* instructionsText;
+    QLabel* scoreText;
+    QLabel* lifeText;
 
 protected:
     void initializeGL();
@@ -48,6 +52,7 @@ private:
     int score, maxScore;
     QTimer* timer;
     void endGame(bool);
+    void initializeUI();
 signals:
     void showLifes(QString);
     void showScore(QString);
@@ -58,6 +63,9 @@ signals:
 public slots:    
     void startGame();
     void updateObjects();    
+    void closeWindow();
+    void showInstructions();
+    void showMenu();
 };
 
 #endif // OPENGLWIDGET_H
