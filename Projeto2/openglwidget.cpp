@@ -6,9 +6,6 @@ OpenGLWidget::OpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
     this->maxScore = 0;
 
     initializeUI();
-    showMenu();
-
-    timer->start(15);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateObjects()));
 }
 
@@ -26,7 +23,8 @@ void OpenGLWidget::startGame()
     boss = std::make_unique<Boss>(this);
     bg1 = std::make_unique<Background>(this, QVector3D(0, 0, -0.5));
     bg2 = std::make_unique<Background>(this, QVector3D(0, 3, -0.5));
-    emit showLifes(QString("Vidas: \%1").arg(ship->lifes));
+    emit showScore(QString("\%1").arg(0, 10, 10, QChar('0')));
+    emit showLifes(QString("Lifes: \%1").arg(ship->lifes));
 }
 
 void OpenGLWidget::initializeGL()
@@ -37,12 +35,7 @@ void OpenGLWidget::initializeGL()
     glEnable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
-
-    ship = std::make_unique<Ship>(this);
-    ship->position = QVector3D(0, 0, 0);
-    bg1 = std::make_unique<Background>(this, QVector3D(0.6, -1.6, 0));
-    bg1->scale = 3.3;
-    bg1->rotation = QVector3D(105, 45, -5);
+    showMenu();
 }
 
 void OpenGLWidget::resizeGL(int width, int height)
@@ -57,8 +50,8 @@ void OpenGLWidget::paintGL()
 
     if(inGame)
     {
-        paintModel(boss.get());
-        boss->drawModel();
+        paintModel(boss->model);
+        boss->draw();
 
         if(!invincible || (delay.elapsed()/100) % 2 == 0){
             paintModel(ship->model);
@@ -81,8 +74,9 @@ void OpenGLWidget::paintGL()
         for(std::list<Bullet *>::iterator it = boss->bulletsShot.begin(); it!=boss->bulletsShot.end(); it++){
             (*it)->draw();
         }
+        qDebug("%d", boss->bulletsShot.size());
     }
-    else
+    else if(inMenu)
     {
         camera.up = QVector3D(0, 0, 1);
         camera.center = QVector3D(0.05, 0, 0);
@@ -96,6 +90,11 @@ void OpenGLWidget::paintGL()
             (*it)->rotation = QVector3D(0, -45, 0);
             (*it)->position.setZ(0.01);
             paintModel((*it)->model);
+            (*it)->draw();
+        }
+        for(std::list<Bullet *>::iterator it = ship->bulletsShot.begin(); it!=ship->bulletsShot.end(); it++){
+            (*it)->rotation = QVector3D(0, -90, 0);
+            (*it)->scale = 0.02;
             (*it)->draw();
         }
         paintModel(bg1->model);
@@ -162,6 +161,33 @@ void OpenGLWidget::keyReleaseEvent(QKeyEvent *event)
 
 void OpenGLWidget::updateObjects()
 {
+    if(inMenu || inGame)
+    {
+        ship->update();
+        for(std::list<Bullet *>::iterator it = ship->fireParticles.begin(); it!=ship->fireParticles.end();){
+            (*it)->update();
+            if((*it)->timeToLive <= 0 || (*it)->scale <= 0){
+                delete(*it);
+                it = ship->fireParticles.erase(it);
+            }
+            else
+                it++;
+        }
+        if(shooting)
+            ship->shoot();
+
+        for(std::list<Bullet *>::iterator it = ship->bulletsShot.begin(); it!=ship->bulletsShot.end();){
+            if((*it)->position.y() > 1 || (*it)->position.y() < -1){
+                delete(*it);
+                it = ship->bulletsShot.erase(it);
+            }
+            else{
+                (*it)->update();
+                it++;
+            }
+        }
+    }
+
     if(inGame)
     {
         if(ship->lifes == 0)
@@ -171,7 +197,6 @@ void OpenGLWidget::updateObjects()
             endGame(true);
         else
         {
-            ship->update();
             boss->shoot();
             bg1->update();
             bg2->update();
@@ -179,33 +204,14 @@ void OpenGLWidget::updateObjects()
             if(invincible && delay.elapsed() > 1500)
                 invincible = false;
 
-            if(shooting)
-                ship->shoot();
-
-            for(std::list<Bullet *>::iterator it = ship->bulletsShot.begin(); it!=ship->bulletsShot.end();){
-                if((*it)->position.y() > 1 || (*it)->position.y() < -1){
+            for(std::list<Bullet *>::iterator it = ship->bulletsShot.begin(); it!=ship->bulletsShot.end();)
+            {
+                if((*it)->hitbox.intersects(boss->hitbox)){
+                    boss->shotTaken();
+                    this->score += 100 * 5/boss->lifes;
+                    emit showScore(QString("\%1").arg(this->score, 10, 10, QChar('0')));
                     delete(*it);
                     it = ship->bulletsShot.erase(it);
-                }
-                else{
-                    (*it)->update();
-                    if((*it)->hitbox.intersects(boss->hitbox)){
-                        boss->shotTaken();
-                        this->score += 100 * 5/boss->lifes;
-                        emit showScore(QString("Pontuação: \%1").arg(this->score));
-                        delete(*it);
-                        it = ship->bulletsShot.erase(it);
-                    }
-                    else
-                        it++;
-                }
-            }
-
-            for(std::list<Bullet *>::iterator it = ship->fireParticles.begin(); it!=ship->fireParticles.end();){
-                (*it)->update();
-                if((*it)->timeToLive <= 0 || (*it)->scale <= 0){
-                    delete(*it);
-                    it = ship->fireParticles.erase(it);
                 }
                 else
                     it++;
@@ -220,7 +226,7 @@ void OpenGLWidget::updateObjects()
                     (*it)->update();
                     if((*it)->hitbox.intersects(ship->hitbox) && !invincible){
                         ship->shotTaken();
-                        emit showLifes(QString("Vidas: \%1").arg(ship->lifes));
+                        emit showLifes(QString("Lifes: \%1").arg(ship->lifes));
                         delete(*it);
                         it = boss->bulletsShot.erase(it);
                         invincible = true;
@@ -232,35 +238,25 @@ void OpenGLWidget::updateObjects()
             }
         }
     }
-    else
-    {
-        ship->update();
-        for(std::list<Bullet *>::iterator it = ship->fireParticles.begin(); it!=ship->fireParticles.end();){
-            (*it)->update();
-            if((*it)->timeToLive <= 0 || (*it)->scale <= 0){
-                delete(*it);
-                it = ship->fireParticles.erase(it);
-            }
-            else
-                it++;
-        }
-    }
     update();
 }
 
 void OpenGLWidget::endGame(bool won)
 {
     this->inGame = false;
-    //timer->stop();
+    this->inMenu = false;
+    timer->stop();
+    emit showScore(QString(""));
+    emit showLifes(QString(""));
     if(this->score > this->maxScore)
         this->maxScore = this->score;
+
     if(won)
-        emit setText(QString("Você venceu! \n\nSua pontuação: \%1 \n\nMaior Pontuação: \%2").arg(this->score).arg(this->maxScore));
+       instructionsText->setText(QString("You Win! \n\nScore: \%1 \n\nMax Score: \%2").arg(this->score).arg(this->maxScore));
     else
-        emit setText(QString("Você perdeu! \n\nSua pontuação: \%1 \n\nMaior Pontuação: \%2").arg(this->score).arg(this->maxScore));
-    emit enableText();
-    emit enableStartButton();
-    emit enableQuitButton();
+       instructionsText->setText(QString("You Lose! \n\nScore: \%1 \n\nMax Score: \%2").arg(this->score).arg(this->maxScore));
+    instructionsText->show();
+    backButton->show();
 }
 
 void OpenGLWidget::closeWindow(){
@@ -273,12 +269,21 @@ void OpenGLWidget::showInstructions()
     quitButton->hide();
     instructionsButton->hide();
 
+    instructionsText->setText("Use the ARROWS to move\nUse the SPACEBAR to shoot");
     instructionsText->show();
     backButton->show();
 }
 
 void OpenGLWidget::showMenu()
 {
+    timer->start(15);
+    this->inMenu = true;
+    ship = std::make_unique<Ship>(this);
+    ship->position = QVector3D(0, 0, 0);
+    bg1 = std::make_unique<Background>(this, QVector3D(0.6, -1.6, 0));
+    bg1->scale = 3.3;
+    bg1->rotation = QVector3D(105, 45, -5);
+
     instructionsText->hide();
     backButton->hide();
 
@@ -317,7 +322,7 @@ void OpenGLWidget::initializeUI()
     connect(backButton, SIGNAL(clicked(bool)), this, SLOT(showMenu()));
 
     instructionsText->setText("Use the ARROWS to move\nUse the SPACEBAR to shoot");
-    instructionsText->setGeometry(20, 200, 800, 200);
+    instructionsText->setGeometry(20, 100, 800, 300);
     instructionsText->setStyleSheet("QLabel{border:0px; background: transparent; text-align:left; font:italic 32pt; font-weight: bold; color: #ffffff}");
 
     lifeText->setGeometry(20, 10, 200, 100);

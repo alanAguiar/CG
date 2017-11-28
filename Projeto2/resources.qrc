@@ -9,11 +9,9 @@
         <file>shipfshader.glsl</file>
     </qresource>
     <qresource prefix="/models">
-        <file>spaceship.off</file>
-        <file>enemyShip.off</file>
-        <file>bullet.off</file>
         <file>plane.obj</file>
         <file>spaceship.obj</file>
+        <file>cromulon.obj</file>
     </qresource>
     <qresource prefix="/textures">
         <file>bullet.png</file>
@@ -21,5 +19,8 @@
         <file>background.png</file>
         <file>playerBullet.png</file>
         <file>fire.png</file>
+        <file>bossIdle.png</file>
+        <file>bossAttack.png</file>
+        <file>bossHit.png</file>
     </qresource>
 </RCC>

@@ -46,7 +46,7 @@ protected:
     void resizeGL(int width, int height);
 private:
     QTime delay;
-    bool inGame = false;
+    bool inGame = false, inMenu = true;
     bool invincible = false;
     bool shooting = false;
     int score, maxScore;

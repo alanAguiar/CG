@@ -1,19 +1,20 @@
 #ifndef BOSS_H
 #define BOSS_H
 
-#include "model.h"
+#include "gameobject.h"
 #include "bullet.h"
 #include <list>
 
-class Boss : public Model
+class Boss : public GameObject
 {
 public:
     Boss(QOpenGLWidget *_glWidget);
     std::list<Bullet *> bulletsShot;    
     int lifes;
+    int state = 0;
     void shoot();
     void shotTaken();
-    void drawModel();
+    void draw();
 private:
     QVector3D* bulletSpawn;
     float healthbar;
