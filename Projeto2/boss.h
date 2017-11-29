@@ -19,7 +19,7 @@ private:
     QVector3D* bulletSpawn;
     float healthbar;
     int pattAux1 = 0, pattAux2 = 1;
-    const int spawnNumber = 16;
+    const int spawnNumber = 12;
     bool shooting = false;
     QTime shootDelay;
     QTime waveDelay;

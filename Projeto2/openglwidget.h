@@ -39,13 +39,13 @@ public:
     QLabel* instructionsText;
     QLabel* scoreText;
     QLabel* lifeText;
-
+    QLabel* startText;
 protected:
     void initializeGL();
     void paintGL();
     void resizeGL(int width, int height);
 private:
-    QTime delay;
+    QTime delay, start;
     bool inGame = false, inMenu = true;
     bool invincible = false;
     bool shooting = false;
@@ -57,9 +57,7 @@ signals:
     void showLifes(QString);
     void showScore(QString);
     void setText(QString);
-    void enableText();
-    void enableStartButton();
-    void enableQuitButton();
+    void setStartText(QString);
 public slots:    
     void startGame();
     void updateObjects();    

@@ -1,5 +1,4 @@
-#version 410
-
+#version 330
 in vec4 v2fcolor;
 in vec2 ftexCoord;
 uniform sampler2D colorTexture;

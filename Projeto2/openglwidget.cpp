@@ -11,6 +11,7 @@ OpenGLWidget::OpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
 
 void OpenGLWidget::startGame()
 {
+    start.start();
     camera.up = QVector3D(0, 1, 0);
     camera.center = QVector3D(0, 0, 0);
     camera.eye = QVector3D(0, 0, 2);
@@ -18,7 +19,7 @@ void OpenGLWidget::startGame()
 
     this->score = 0;
     inGame = true;
-
+    startText->show();
     ship = std::make_unique<Ship>(this);
     boss = std::make_unique<Boss>(this);
     bg1 = std::make_unique<Background>(this, QVector3D(0, 0, -0.5));
@@ -52,6 +53,19 @@ void OpenGLWidget::paintGL()
     {
         paintModel(boss->model);
         boss->draw();
+
+        if(start.elapsed() >= 500 && start.elapsed() <= 550)
+            emit setStartText(QString("SHOW"));
+        else if(start.elapsed() >= 1000 && start.elapsed() <= 1050)
+            emit setStartText(QString("SHOW\nME"));
+        else if(start.elapsed() >= 1500 && start.elapsed() <= 1550)
+            emit setStartText(QString("SHOW\nME\nWHAT"));
+        else if(start.elapsed() >= 2000 && start.elapsed() <= 2050)
+            emit setStartText(QString("SHOW\nME\nWHAT\nYOU"));
+        else if(start.elapsed() >= 2500 && start.elapsed() <= 2550)
+            emit setStartText(QString("SHOW\nME\nWHAT\nYOU\nGOT"));
+        else if(start.elapsed() >= 3000 && start.elapsed() <= 3050)
+            emit setStartText(QString(""));
 
         if(!invincible || (delay.elapsed()/100) % 2 == 0){
             paintModel(ship->model);
@@ -257,6 +271,7 @@ void OpenGLWidget::endGame(bool won)
        instructionsText->setText(QString("DISQUALIFIED! \n\nScore: \%1 \n\nMax Score: \%2").arg(this->score).arg(this->maxScore));
     instructionsText->show();
     backButton->show();
+    startText->hide();
 }
 
 void OpenGLWidget::closeWindow(){
@@ -286,6 +301,7 @@ void OpenGLWidget::showMenu()
 
     instructionsText->hide();
     backButton->hide();
+    startText->hide();
 
     startButton->show();
     quitButton->show();
@@ -301,6 +317,7 @@ void OpenGLWidget::initializeUI()
     instructionsText = new QLabel(this);
     lifeText = new QLabel(this);
     scoreText = new QLabel(this);
+    startText = new QLabel(this);
 
     startButton->setGeometry(20, 200, 200, 100);
     startButton->setStyleSheet("QPushButton{border:0px; background: transparent; text-align:left; font:italic 40pt; font-weight: bold; color: #ffffff}QPushButton:hover{border:0px; background: transparent; text-align:left; font:italic 48pt; font-weight: bold; color: #ffffff}");
@@ -332,4 +349,8 @@ void OpenGLWidget::initializeUI()
     scoreText->setGeometry(20, 5, 200, 30);
     scoreText->setStyleSheet("QLabel{border: 0px; background: transparent; text-align: right; font: 18pt; font-weight: bold; color: #ffffff}");
     connect(this, SIGNAL(showScore(QString)), scoreText, SLOT(setText(QString)));
+
+    startText->setGeometry(20, 5, 800, 800);
+    startText->setStyleSheet("QLabel{border: 0px; background: transparent; text-align: center; font: 48pt; font-weight: bold; color: #ffffff}");
+    connect(this, SIGNAL(setStartText(QString)), startText, SLOT(setText(QString)));
 }

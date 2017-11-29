@@ -11,8 +11,9 @@ Bullet::Bullet(QOpenGLWidget *_glWidget, QVector3D position, QVector2D speed, fl
     this->timeToLive = 1000000;
     this->decay = 0;
     this->textureID = textureID;
-    this->hitbox.setTopLeft(this->hitbox.topLeft()*scale);
-    this->hitbox.setBottomRight(this->hitbox.bottomRight()*scale);
+
+    this->hitbox.setTopLeft(QPointF(-0.5*scale, 0.5 * scale));
+    this->hitbox.setBottomRight(QPointF(0.5*scale,-0.5*scale));
     this->hitbox.adjust(0.025, 0.025, -0.025, -0.025);
 
 

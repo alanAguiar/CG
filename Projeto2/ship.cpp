@@ -3,7 +3,7 @@
 Ship::Ship(QOpenGLWidget *_glWidget):GameObject(_glWidget)
 {
     this->position = QVector3D(0, -0.75, 0);
-    this->scale = 0.15;
+    this->scale = 0.12;
     this->rotation = QVector3D(0, 0, 0);
     this->shootDelay.start();
 
@@ -14,6 +14,11 @@ Ship::Ship(QOpenGLWidget *_glWidget):GameObject(_glWidget)
     QString textures = ":/textures/shiptexture.png";
     static Model* m = new Model(_glWidget, ":/models/spaceship.obj", ":/shaders/shipfshader.glsl",
                                         ":/shaders/shipVertexShader.glsl", &textures, 1);
+
+
+    this->hitbox.setTopLeft(QPointF(-0.5*scale, 0.5 * scale));
+    this->hitbox.setBottomRight(QPointF(0.5*scale,-0.5*scale));
+    this->hitbox.moveCenter(QPointF(position.x(), position.y()));
 
     this->model = m;
     this->model->material.diffuse = QVector4D(1, 1, 1, 1);
