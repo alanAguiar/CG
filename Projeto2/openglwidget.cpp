@@ -74,7 +74,6 @@ void OpenGLWidget::paintGL()
         for(std::list<Bullet *>::iterator it = boss->bulletsShot.begin(); it!=boss->bulletsShot.end(); it++){
             (*it)->draw();
         }
-        qDebug("%d", boss->bulletsShot.size());
     }
     else if(inMenu)
     {
@@ -198,6 +197,7 @@ void OpenGLWidget::updateObjects()
         else
         {
             boss->shoot();
+            boss->update();
             bg1->update();
             bg2->update();
 
@@ -252,9 +252,9 @@ void OpenGLWidget::endGame(bool won)
         this->maxScore = this->score;
 
     if(won)
-       instructionsText->setText(QString("You Win! \n\nScore: \%1 \n\nMax Score: \%2").arg(this->score).arg(this->maxScore));
+       instructionsText->setText(QString("I LIKE WHAT YOU GOT! \n\nScore: \%1 \n\nMax Score: \%2").arg(this->score).arg(this->maxScore));
     else
-       instructionsText->setText(QString("You Lose! \n\nScore: \%1 \n\nMax Score: \%2").arg(this->score).arg(this->maxScore));
+       instructionsText->setText(QString("DISQUALIFIED! \n\nScore: \%1 \n\nMax Score: \%2").arg(this->score).arg(this->maxScore));
     instructionsText->show();
     backButton->show();
 }

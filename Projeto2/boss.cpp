@@ -6,25 +6,27 @@ Boss::Boss(QOpenGLWidget* _glWidget) : GameObject(_glWidget)
 
     this->lifes = 5;
 
-    this->position = QVector3D(0, 0.8, 0); //1.3
+    this->position = QVector3D(0,1.8, 0); //1.3
     this->scale = 0.6; //1.2
     this->rotation = QVector3D(30, 0, 0); //180
     this->healthbar = 100;
     this->currentColor = QVector4D(0, 1, 1, 0);
     this->toNextColor = QVector4D(0, -0.25, -1, 0);
 
-    this->hitbox.setTopLeft(this->hitbox.topLeft()*scale);
-    this->hitbox.setBottomRight(this->hitbox.bottomRight()*scale);
-    this->hitbox.moveCenter(QPointF(position.x(),position.y()+0.6));
+    this->hitbox.setTopLeft(QPointF(-0.5*scale, 0.3 * scale));
+    this->hitbox.setBottomRight(QPointF(0.5*scale,-1.1*scale));
+    this->hitbox.moveCenter(QPointF(position.x(), position.y()));
 
     this->bulletSpawn = new QVector3D[spawnNumber];
-    for(int i=0; i<spawnNumber; i++)
-        bulletSpawn[i] = QVector3D(this->hitbox.x()+0.085+(i*(this->hitbox.width()-0.17))/spawnNumber, this->hitbox.y()-0.1, 0);
+    for(int i=0; i<spawnNumber; i++){
+        //bulletSpawn[i] = QVector3D(this->hitbox.x()+0.085+(i*(this->hitbox.width()-0.17))/spawnNumber, this->hitbox.y()-0.1, 0);
+        bulletSpawn[i] = QVector3D(-0.7 + (i*1.4)/spawnNumber, 0.52, 0);
+    }
     shootDelay.start();
     waveDelay.start();
 
     QString textures[3] = {":/textures/bossIdle.png", ":/textures/bossAttack.png", ":/textures/bossHit.png"};
-    static Model* m = new Model(_glWidget, ":/models/cromulon.obj", ":/shaders/shipfshader.glsl",
+    static Model* m = new Model(_glWidget, ":/models/cromulon.obj", ":/shaders/bossfshader.glsl",
                                             ":/shaders/shipVertexShader.glsl", textures, 3);
     this->model = m;
     this->model->material.shininess = 10;
@@ -61,6 +63,8 @@ void Boss::shoot()
     }
     else
     {
+        if(lifes==5 && position.y()>0.98)
+            position.setY(position.y() - 0.0035);
         shooting = false;
         pattAux1 = 0;
         pattAux2 = 1;
@@ -72,9 +76,10 @@ void Boss::shoot()
             else
                 position.setX(position.x() + 0.02);
         }
+        else if(time > 3000 && time < 5000)
+            state = 0;
         else if(time > 5000)
         {
-            state = 0;
             if((time/100)%2 == 0)
                 position.setY(position.y() + 0.003);
             else

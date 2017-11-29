@@ -7,6 +7,7 @@
         <file>bulletVShader.glsl</file>
         <file>bulletfshader.glsl</file>
         <file>shipfshader.glsl</file>
+        <file>bossfshader.glsl</file>
     </qresource>
     <qresource prefix="/models">
         <file>plane.obj</file>

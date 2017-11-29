@@ -1,26 +1,41 @@
 #version 410
-
-layout (location = 0) in vec4 position;
-
-in int gl_VertexID;
+layout (location = 0) in vec4 vPosition;
+layout (location = 1) in vec3 vNormal;
+layout (location = 2) in vec2 vcoordText;
 
 uniform mat4 model;
-uniform float life;
-uniform vec4 currentColor;
-uniform vec4 toNextColor;
+uniform mat4 view;
+uniform mat4 projection;
+uniform mat3 normalMatrix;
 
-out vec4 vPos;
-out  vec4 v2fcolor;
+uniform float shininess;
+uniform vec4 lightPosition;
 
-void main(){
-    gl_Position = model*position;
+out vec3 fN;
+out vec3 fE;
+out vec3 fL;
 
+out vec2 ftexCoord;
+
+void main()
+{
+    vec4 VMvPosition = view * model * vPosition;
+
+    fN = mat3(view) * normalMatrix * vNormal;
+    fL = lightPosition.xyz - VMvPosition.xyz;
+    fE = - VMvPosition.xyz;
+
+    gl_Position = projection * VMvPosition;
+    ftexCoord = vcoordText;
+}
+
+
+
+/*
     float v = 122*life/100 + 122;
 
     if(gl_VertexID  > v|| 243 - gl_VertexID > v)
         v2fcolor = currentColor + ((-life+486.0)/486.0)*toNextColor;
     else
         v2fcolor = currentColor;
-
-    vPos = gl_Position;
-}
+*/
